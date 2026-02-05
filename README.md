@@ -160,8 +160,7 @@ curl -X POST -H "Content-Type: application/json" -d '{"text":"PASTE PAGE TEXT"}'
 curl -X POST -F "url=https://example.com/page" http://127.0.0.1:5000/generate
 ```
 
-CLI helper
-- `faq_generator.py` prefers a text file input (`scraped_page.txt` or another .txt) and will send that content to the model; use that if you already have scraped content.
+
 
 Security note
 - Do not paste API keys into public logs or chat. Store keys in environment variables and keep them secret.
