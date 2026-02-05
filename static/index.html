@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>FAQ Generator</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <main class="container">
+    <header style="display:flex;justify-content:space-between;align-items:center;gap:16px;">
+      <h1>FAQ Generator</h1>
+      <small>Generate 5 concise FAQs from a webpage</small>
+    </header>
+
+    <form id="form" class="form">
+      <div class="form-row">
+        <label for="url">Website URL</label>
+        <input id="url" name="url" type="url" placeholder="https://example.com/page" autofocus />
+      </div>
+
+      <div class="form-row actions">
+        <button id="submitBtn" type="submit">Generate FAQs</button>
+        <button id="downloadBtn" type="button" style="display:none;">Download JSON</button>
+        <a id="scraped-link" href="/scraped" target="_blank" style="display:none;margin-left:8px;">View scraped text</a>
+      </div>
+    </form>
+
+    <div id="status" class="status"></div>
+    <div id="result" class="result"></div>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
