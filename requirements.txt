@@ -3,3 +3,4 @@ beautifulsoup4
 bs4
 google-genai
 gunicorn
+flask
