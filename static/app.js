@@ -27,11 +27,13 @@
     scrapedLink.style.display = 'none';
 
     const url = document.getElementById('url').value.trim();
-    if (!url) { setStatus('Enter a URL to continue', true); return; }
+    const text = document.getElementById('text').value.trim();
+    if (!url && !text) { setStatus('Enter a URL or paste page text to continue', true); return; }
 
     setStatus('Generating FAQs…');
     try {
-      const data = await generate({ url });
+      const payload = text ? { text } : { url };
+      const data = await generate(payload);
       if (!data || !data.success) {
         setStatus('Error: ' + (data?.error || 'Unknown error'), true);
         if (data?.raw) {
