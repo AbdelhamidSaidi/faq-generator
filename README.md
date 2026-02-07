@@ -160,9 +160,3 @@ curl -X POST -H "Content-Type: application/json" -d '{"text":"PASTE PAGE TEXT"}'
 curl -X POST -F "url=https://example.com/page" http://127.0.0.1:5000/generate
 ```
 
-
-
-Security note
-- Do not paste API keys into public logs or chat. Store keys in environment variables and keep them secret.
-
-If you want a `/set_api_key` endpoint (server-side) to set the key without restarting, tell me and I can add it.
