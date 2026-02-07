@@ -1,5 +1,6 @@
 import os
 import json
+import re
 import requests
 from flask import Flask, request, jsonify, send_from_directory
 from bs4 import BeautifulSoup
@@ -96,6 +97,46 @@ def _extract_text_from_generate_content(response_json: dict) -> str:
     return ''.join(texts) if texts else json.dumps(response_json)
 
 
+def _extract_json_from_text(text: str):
+    """Try to extract a JSON object/array from free-form model output.
+
+    Returns the parsed JSON on success, or None on failure.
+    """
+    if not text or not isinstance(text, str):
+        return None
+    t = text.strip()
+
+    # Remove triple-backtick fences (```json ... ```)
+    m = re.search(r'```(?:json)?\n(.+?)\n```', t, re.DOTALL | re.IGNORECASE)
+    if m:
+        t = m.group(1).strip()
+
+    # Remove any single backticks
+    t = re.sub(r'`([^`]+)`', r'\1', t)
+
+    # Try direct JSON parse
+    try:
+        return json.loads(t)
+    except Exception:
+        pass
+
+    # Fallback: find the first {..} or [..] block and try to parse that
+    for open_c, close_c in (('{', '}'), ('[', ']')):
+        try:
+            start = t.index(open_c)
+            end = t.rindex(close_c)
+            candidate = t[start:end + 1]
+            try:
+                return json.loads(candidate)
+            except Exception:
+                # If that fails, continue to next attempt
+                pass
+        except ValueError:
+            continue
+
+    return None
+
+
 def call_gemini_rest(api_key: str, model: str, prompt: str) -> str:
     url = f'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}'
     body = {
@@ -181,11 +222,20 @@ def generate():
         prompt = build_prompt(url or 'pasted_text', page_text)
         out = call_gemini(prompt)
 
+        # Try to parse JSON; if the model includes fences or extra text,
+        # attempt to extract the JSON payload before failing.
+        parsed = None
         try:
             parsed = json.loads(out)
-            return jsonify({'success': True, 'faqs': parsed.get('faqs', parsed)}), 200
         except Exception:
+            parsed = _extract_json_from_text(out)
+
+        if parsed is None:
             return jsonify({'success': False, 'error': 'Model output was not valid JSON', 'raw': out}), 502
+
+        # If parsed is a dict with a `faqs` key, return that; otherwise return parsed directly.
+        faqs = parsed.get('faqs') if isinstance(parsed, dict) and 'faqs' in parsed else parsed
+        return jsonify({'success': True, 'faqs': faqs}), 200
 
     except Exception as e:
         msg = str(e)
